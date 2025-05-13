@@ -1,4 +1,5 @@
 from pygame import *
+from random import randint
 mixer.init()
 window = display.set_mode((700, 500))
 display.set_caption("PING-PONG")
@@ -24,29 +25,31 @@ class GameSprite(sprite.Sprite):
 class Player1(GameSprite):
     def update(self):
         keys = key.get_pressed()
-        #if keys[K_LEFT] and self.rect.x > 5:
-            #self.rect.x -= self.speed
-        #if keys[K_RIGHT] and self.rect.x < 620:
-            #self.rect.x += self.speed
+        if keys[K_LEFT] and self.rect.x > 5:
+            self.rect.x -= self.speed
+        if keys[K_RIGHT] and self.rect.x < 620:
+            self.rect.x += self.speed
     
 
-
-'''class Enemy(GameSprite):
-    def __init__(self, player_image, speed, x, y, width, height):
-        super().__init__(player_image, speed, x, y, width, height)
+class Player2(GameSprite):
     def update(self):
-        self.rect.y += self.speed
-        global lost 
-        if self.rect.y > 500:
-            self.rect.y = 0
-            self.rect.x = randint(30, 420)
-            lost = lost + 1'''
+        keys = key.get_pressed()
+        if keys[K_a] and self.rect.x > 5:
+            self.rect.x -= self.speed
+        if keys[K_d] and self.rect.x < 620:
+            self.rect.x += self.speed
 
+class Ball(GameSprite):
+    vector = Vector2(0, 1)
+    def update(self):
+        vector = self.vector * self.speed
+        self.rect.x += vector.x
+        self.rect.y += vector.y
+        
 
-
-rak = Player1('rak.png', 5, 300, 400, 60, 65)
-rak1 = Player1('rak.png', 5, 300, 30, 60, 65)
-ball = Player1('ball.png', 5, 150, 150, 30, 30)
+rak = Player1('rak.png', 8, 300, 400, 60, 65)
+rak1 = Player2('rak.png', 8, 300, 30, 60, 65)
+ball = Ball('ball.png', 5, 150, 150, 30, 30)
 
 
 
@@ -58,6 +61,9 @@ while game:
         if e.type == QUIT:
             game = False
 
+    
+
+
     rak.reset()
     rak.update()
     rak1.reset()
@@ -65,6 +71,22 @@ while game:
     ball.reset()
     ball.update()
 
+    if rak.rect.colliderect(ball.rect):
+        ball.vector = -ball.vector.rotate(randint(-30, 30))
+        ball.rect.bottom = rak.rect.top
+    if rak1.rect.colliderect(ball.rect):
+        ball.vector = -ball.vector.rotate(randint(-30, 30))
+        ball.rect.top = rak1.rect.bottom
+
+    if ball.rect.left <= 0 or ball.rect.right >= 700:
+        ball.vector.x = -ball.vector.x
+    
+    if ball.rect.top <= 0:
+        print("Нижний победил")
+        ball.rect.center = (350, 250)
+    if ball.rect.top >= 500:
+        print("Верхний победил")
+        ball.rect.center = (350, 250)
 
     display.update()    
     clock.tick(FPS)
